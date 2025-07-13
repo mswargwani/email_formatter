@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Smart Formatter with Puter.js</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+      #panel {
+        width: 260px;
+        height: auto;
+        border: 1px solid #aaa;
+        padding: 15px;
+        background: #f0f0f0;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        cursor: move;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      #formatted {
+        margin-top: 10px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="panel">
+      <strong>📧 Smart Formatter:</strong><br />
+      <span id="formatted">Fetching and formatting your email...</span>
+    </div>
+
+    <script src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
+    <script>
+      interact("#panel").draggable({
+        modifiers: [interact.modifiers.restrictRect({ restriction: "parent" })],
+        listeners: {
+          move(event) {
+            event.target.style.transform = `translate(${event.pageX}px, ${event.pageY}px)`;
+          },
+        },
+      });
+
+      Office.initialize = () => {
+        Office.context.mailbox.item.body.getAsync(
+          Office.CoercionType.Text,
+          (result) => {
+            const emailText = result.value;
+
+            puter.ai
+              .chat(
+                `Format this email professionally and fix grammar: ${emailText}`,
+                {
+                  model: "gpt-4.1-nano",
+                }
+              )
+              .then((response) => {
+                document.getElementById("formatted").innerText = response;
+              })
+              .catch((err) => {
+                document.getElementById("formatted").innerText =
+                  "Error formatting email.";
+                console.error(err);
+              });
+          }
+        );
+      };
+    </script>
+  </body>
+</html>
